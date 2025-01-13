@@ -41,20 +41,25 @@ for project_name in project_names:
         dataset_name = get_dataset_name(project_name)
         model_name = get_model_name(project_name)
 
-        local_dir = f"representations/{dataset_name}/{model_name}"
+        local_dir = f"data/representations/{dataset_name}/{model_name}"
         os.makedirs(local_dir, exist_ok=True)
 
         runs = wandb.Api().runs(project_name)
         for run in runs:
             print('.',run.name)
             run_dir = f"{local_dir}/{run.name}"
-            if os.path.exists(run_dir):
-                continue # skip if the run_dir already exists
                 
             # download the features folder
             os.makedirs(run_dir, exist_ok=True)
             for file in run.files():
+                # skip the file if it already exists
+                if os.path.exists(f"{run_dir}/{file.name}"):
+                    continue
+
                 if 'features' in file.name:
+                    print('...', file.name)
+                    file.download(root=run_dir)
+                if 'last.pth' in file.name:
                     print('...', file.name)
                     file.download(root=run_dir)
 
